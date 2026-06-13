@@ -1,0 +1,13 @@
+model Payment {
+  id            String   @id @default(uuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id])
+  amount        Float
+  currency      String   @default("BDT")
+  method        String   @default("SSLCommerz")
+  status        String   @default("INITIATED")
+  tranId        String   @unique
+  gatewayPageUrl String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
