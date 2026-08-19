@@ -7,5 +7,6 @@ export default defineConfig({
   schema: 'src/app/prisma',
   datasource: {
     url: process.env.DATABASE_URL!,
+    directUrl: process.env.DIRECT_URL!,
   },
 });
