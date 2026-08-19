@@ -7,7 +7,7 @@ export interface IAuthTokens {
 }
 
 const getCookieDomain = (): string | undefined => {
-  if (config.env === 'development') {
+  if (config.env === 'production') {
     return 'localhost';
   }
   return undefined;
