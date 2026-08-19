@@ -96,17 +96,17 @@ npm install
 Create a `.env` file in the root:
 
 ```env
-NODE_ENV=development
-PORT=5001
-FRONTEND_URL=http://localhost:3000
-BASE_URL=http://localhost:5001/api/v1
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/debt_manager_db?schema=public"
-SALT_ROUND=10
-JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=1h
-JWT_REFRESH_EXPIRES_IN=30d
-COOKIE_SECURE=false
-REDIS_URL=redis://localhost:6379
+NODE_ENV=
+PORT=
+FRONTEND_URL=
+BASE_URL=http:
+DATABASE_URL=
+SALT_ROUND=
+JWT_SECRET=
+JWT_EXPIRES_IN=
+JWT_REFRESH_EXPIRES_IN=
+COOKIE_SECURE=
+REDIS_URL=
 ```
 
 ### Database
