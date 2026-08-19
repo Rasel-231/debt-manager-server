@@ -1,0 +1,21 @@
+enum Role {
+  USER
+  ADMIN
+}
+
+enum LoanType {
+  CASH_WITH_PRODUCT
+  CASH_ONLY
+}
+
+enum LoanStatus {
+  PENDING
+  ACTIVE
+  FINISHED
+  DUE
+}
+
+enum TransactionType {
+  DEPOSIT
+  PAYMENT
+}

@@ -1,0 +1,17 @@
+model Loan {
+  id              String           @id @default(uuid())
+  userId          String           @map("user_id")
+  title           String
+  amount          Float
+  remainingAmount Float            @default(0) @map("remaining_amount")
+  loanType        LoanType         @map("loan_type")
+  status          LoanStatus       @default(PENDING)
+  dueDate         DateTime?        @map("due_date")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("loans")
+}

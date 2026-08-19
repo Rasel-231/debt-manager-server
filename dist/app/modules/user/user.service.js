@@ -4,41 +4,116 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const config_1 = __importDefault(require("../../../config"));
+const ApiError_1 = require("../../../errors/ApiError");
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
-const redis_1 = require("../../../shared/redis");
-const sendEmailHelper_1 = require("../../../utils/sendEmailHelper");
-const aiHelper_1 = require("../../../utils/aiHelper");
-const paymentHelper_1 = require("../../../utils/paymentHelper");
-const processComplexUserWorkspace = async (userData, fileUrl) => {
-    // 1. Transactional Postgres Entry Execution
-    const newUserRecord = await prisma_1.default.user.create({
-        data: {
-            email: userData.email,
-            name: userData.name,
-            avatarUrl: fileUrl,
+const paginationHelper_1 = require("../../../shared/paginationHelper");
+const user_constant_1 = require("./user.constant");
+const getAllUsers = async (filters, paginationOptions) => {
+    const { searchTerm, ...filterData } = filters;
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper_1.paginationHelper.calculatePagination(paginationOptions);
+    const andConditions = [];
+    if (searchTerm) {
+        andConditions.push({
+            OR: user_constant_1.userSearchableFields.map((field) => ({
+                [field]: { contains: searchTerm, mode: 'insensitive' },
+            })),
+        });
+    }
+    if (Object.keys(filterData).length > 0) {
+        andConditions.push({
+            AND: Object.entries(filterData).map(([key, value]) => {
+                if (key === 'isActive') {
+                    return { isActive: value === 'true' };
+                }
+                return { [key]: value };
+            }),
+        });
+    }
+    const whereConditions = andConditions.length
+        ? { AND: andConditions }
+        : {};
+    const result = await prisma_1.default.user.findMany({
+        where: whereConditions,
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: { select: { loans: true, transactions: true } },
         },
     });
-    // 2. Cache invalidation layer operations context via Redis Instance directly
-    await redis_1.RedisService.client.set(`user_session:${newUserRecord.id}`, JSON.stringify(newUserRecord), {
-        EX: 3600,
-    });
-    // 3. Triggering Isolated Background Engine processes
-    const generatedInsightWelcomeText = await aiHelper_1.aiHelper.generateAiResponse(`Write a short 1-line welcoming phrase for our active premium platform buyer client named ${userData.name}.`);
-    await sendEmailHelper_1.sendEmailHelper.sendEmail(userData.email, 'Welcome onboard transaction active record logger notification email setup!', `<h1>Welcome!</h1><p>${generatedInsightWelcomeText}</p>`);
-    // 4. Instantiate payment payload registration token pipeline parameters reference tracking object mapping layout standard structures
-    const targetPaymentGatewayRedirectAddressUrl = await paymentHelper_1.paymentHelper.initPayment({
-        total_amount: 1500,
-        tran_id: `TXN-${Date.now()}`,
-        cus_name: userData.name,
-        cus_email: userData.email,
-        cus_phone: '01700000000',
-    });
+    const total = await prisma_1.default.user.count({ where: whereConditions });
     return {
-        user: newUserRecord,
-        checkoutUrl: targetPaymentGatewayRedirectAddressUrl,
+        meta: { page, limit, total },
+        data: result,
     };
 };
+const getUserById = async (id) => {
+    const user = await prisma_1.default.user.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: { select: { loans: true, transactions: true } },
+        },
+    });
+    if (!user) {
+        throw new ApiError_1.ApiError(404, 'User not found');
+    }
+    return user;
+};
+const updateUser = async (id, payload) => {
+    const existingUser = await prisma_1.default.user.findUnique({ where: { id } });
+    if (!existingUser) {
+        throw new ApiError_1.ApiError(404, 'User not found');
+    }
+    const data = {
+        ...(payload.name !== undefined && { name: payload.name }),
+        ...(payload.role !== undefined && { role: payload.role }),
+        ...(payload.isActive !== undefined && { isActive: payload.isActive }),
+        ...(payload.password !== undefined && {
+            password: await bcrypt_1.default.hash(payload.password, config_1.default.salt_rounds),
+        }),
+    };
+    const updatedUser = await prisma_1.default.user.update({
+        where: { id },
+        data,
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    });
+    return updatedUser;
+};
+const deleteUser = async (id) => {
+    const existingUser = await prisma_1.default.user.findUnique({ where: { id } });
+    if (!existingUser) {
+        throw new ApiError_1.ApiError(404, 'User not found');
+    }
+    await prisma_1.default.user.delete({ where: { id } });
+};
 exports.UserService = {
-    processComplexUserWorkspace,
+    getAllUsers,
+    getUserById,
+    updateUser,
+    deleteUser,
 };
 //# sourceMappingURL=user.service.js.map

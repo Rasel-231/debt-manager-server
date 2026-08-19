@@ -6,8 +6,8 @@ dotenv.config({ path: path.join(process.cwd(), '.env') });
 export default {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 5000,
-  frontend_url: process.env.FRONTEND_URL,
-  base_url: process.env.BASE_URL,
+  frontend_url: process.env.FRONTEND_URL || 'http://localhost:3000',
+  base_url: process.env.BASE_URL || 'http://localhost:5000/api/v1',
   database_url: process.env.DATABASE_URL,
   salt_rounds: Number(process.env.SALT_ROUND || 10),
   jwt: {
@@ -15,20 +15,14 @@ export default {
     expires_in: process.env.JWT_EXPIRES_IN || '1h',
     refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
-  cloudinary: {
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET,
-  },
-  ai_api_key: process.env.AI_API_KEY,
-  sslcommerz: {
-    store_id: process.env.Store_ID,
-    store_password: process.env.Store_Password,
-    is_live: false,
-  },
-  email: {
-    app_password: process.env.APP_PASSWORD,
-    support_email: process.env.SUPPORT_EMAIL,
+  cookie: {
+    name: 'accessToken',
+    refreshName: 'refreshToken',
+    secure: process.env.COOKIE_SECURE === 'true',
+    httpOnly: true,
+    sameSite: 'lax' as const,
+    maxAge: 60 * 60 * 1000,
+    refreshMaxAge: 30 * 24 * 60 * 60 * 1000,
   },
   redis_url: process.env.REDIS_URL || 'redis://localhost:6379',
 };

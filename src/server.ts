@@ -7,12 +7,16 @@ async function myserver() {
   let server: Server;
   try {
     await RedisService.connectRedis();
+  } catch (err) {
+    console.warn('Redis not reachable — continuing with in-memory token store', err);
+  }
 
+  try {
     server = app.listen(config.port, () => {
-      console.log(` Fully secure operational grid safe on port channels: ${config.port}`);
+      console.log(` Debt Manager API is running on port: ${config.port}`);
     });
   } catch (err) {
-    console.error('System structural entry deployment setup pipeline aborted:', err);
+    console.error('Failed to start server:', err);
   }
 }
 

@@ -1,159 +1,204 @@
-# My Premium Backend
+# Debt Manager Server
 
-A TypeScript + Express.js backend for a premium e-commerce platform with AI, email, payment, and file upload capabilities.
+RESTful API for debt and loan management with role-based access control, JWT authentication, and Redis-powered token management.
 
 ## Tech Stack
 
-- **Runtime:** Node.js (TypeScript)
-- **Framework:** Express.js v4.18.2
-- **Database:** PostgreSQL with Prisma ORM
-- **Caching:** Redis (ioredis)
-- **File Upload:** Cloudinary + Multer
-- **Payment Gateway:** SSLCommerz
-- **Email Service:** Nodemailer (Gmail SMTP)
-- **AI Integration:** OpenRouter API (Llama 3)
+- **Runtime:** Node.js + TypeScript
+- **Framework:** Express.js
+- **ORM:** Prisma 7 (PostgreSQL adapter)
+- **Database:** PostgreSQL
+- **Auth:** JWT (access + refresh tokens) via httpOnly cookies
+- **Cache:** Redis (with in-memory fallback)
 - **Validation:** Zod
-- **Authentication:** JWT + bcrypt
 
 ## Features
 
-### Current
-- **User Registration** with avatar upload, AI-generated welcome text, email notification, and instant payment initiation
-- **AI Integration** — generates personalized welcome content via OpenRouter (Llama 3)
-- **File Upload** — Cloudinary integration via Multer for avatar/image uploads
-- **Email Service** — sends transactional emails via Nodemailer
-- **Payment Gateway** — SSLCommerz integration for BDT payments
-- **Redis Caching** — session management and caching layer
-- **Global Error Handling** — centralized error handler with Zod validation support
-- **Modular Architecture** — feature-based modules (routes → controllers → services)
-
-### Planned
-- Authentication & Authorization (JWT login/register with role-based access)
-- Order management (CRUD + status tracking)
-- Payment management & webhook handling
-- Advanced filtering, searching, and pagination
+- Register / Login / Logout with secure httpOnly cookies
+- Access token (1h) + Refresh token (30d) rotation
+- RBAC — `USER` and `ADMIN` roles with route-level and ownership-level guards
+- Full CRUD for Loans and Transactions
+- Loan summary with status breakdown, type breakdown, monthly trend, critical/finished/new loan lists
+- Transaction stats with recent activity
+- Pagination, sorting, and filtering on all list endpoints
+- Redis token blacklisting with fallback to in-memory store
 
 ## Project Structure
 
 ```
-my-premium-backend/
-├── src/
-│   ├── app.ts                    # Express app setup
-│   ├── server.ts                 # Server bootstrap
-│   ├── app/
-│   │   ├── modules/
-│   │   │   └── user/             # User module
-│   │   │       ├── user.constant.ts
-│   │   │       ├── user.controller.ts
-│   │   │       ├── user.interface.ts
-│   │   │       ├── user.route.ts
-│   │   │       ├── user.service.ts
-│   │   │       └── user.validation.ts
-│   │   ├── prisma/               # Prisma schema (multi-file)
-│   │   │   ├── schema.prisma     # Generator & datasource
-│   │   │   ├── user.prisma       # User model
-│   │   │   ├── order.prisma      # Order model
-│   │   │   └── payment.prisma    # Payment model
-│   │   └── routes/
-│   │       └── index.ts          # Route aggregator
-│   ├── config/
-│   │   └── index.ts              # Env config loader
-│   ├── errors/
-│   │   └── ApiError.ts           # Custom error class
-│   ├── interfaces/
-│   │   └── common.ts             # Shared interfaces
-│   ├── middlewares/
-│   │   ├── globalErrorHandler.ts # Error handler
-│   │   └── validateRequest.ts    # Zod validation middleware
-│   ├── shared/
-│   │   ├── paginationHelper.ts   # Pagination utility
-│   │   ├── prisma.ts             # Prisma client singleton
-│   │   └── redis.ts              # Redis client
-│   └── utils/
-│       ├── aiHelper.ts           # OpenRouter AI integration
-│       ├── catchAsync.ts         # Async error wrapper
-│       ├── fileUploadHelper.ts   # Cloudinary + Multer setup
-│       ├── paymentHelper.ts      # SSLCommerz integration
-│       ├── sendEmailHelper.ts    # Nodemailer setup
-│       └── sendResponse.ts       # Standardized response helper
-├── prisma.config.ts              # Prisma config
-├── package.json
-├── tsconfig.json
-└── .env
+src/
+├── app.ts                     # Express app setup
+├── server.ts                  # Bootstrap (Redis + listen)
+├── config/
+│   └── index.ts               # Environment config
+├── errors/
+│   └── ApiError.ts            # Custom error class
+├── interfaces/
+│   └── common.ts              # Shared TS interfaces
+├── middlewares/
+│   ├── auth.ts                # authenticate + authorize
+│   ├── globalErrorHandler.ts  # Centralized error handler
+│   └── validateRequest.ts     # Zod validation middleware
+├── shared/
+│   ├── prisma.ts              # PrismaClient singleton
+│   ├── redis.ts               # Redis client
+│   ├── tokenStore.ts          # Token store (Redis + memory)
+│   └── paginationHelper.ts    # Pagination calculator
+├── utils/
+│   ├── catchAsync.ts          # Async error wrapper
+│   ├── jwtCookie.ts           # Cookie helpers
+│   ├── pick.ts                # Object pick utility
+│   └── sendResponse.ts        # Standardized JSON response
+└── app/
+    ├── prisma/                 # Multi-file Prisma schema
+    │   ├── schema.prisma       # Generator + datasource
+    │   ├── enums.prisma        # Role, LoanType, LoanStatus, TransactionType
+    │   ├── user.prisma         # User model
+    │   ├── loan.prisma         # Loan model
+    │   └── transaction.prisma  # Transaction model
+    ├── routes/
+    │   └── index.ts            # Route aggregator
+    └── modules/
+        ├── auth/               # Register, Login, Logout, Refresh, Profile, Change Password
+        ├── user/               # CRUD (Admin only)
+        ├── loan/               # CRUD + Summary
+        └── transaction/        # CRUD + Stats
 ```
 
-## Prerequisites
+Each module follows the same structure:
+
+```
+modules/<name>/
+├── <name>.constant.ts      # Filterable/sortable field arrays
+├── <name>.controller.ts    # Request handlers (wrapped in catchAsync)
+├── <name>.interface.ts     # TypeScript interfaces
+├── <name>.route.ts         # Express Router
+├── <name>.service.ts       # Business logic + Prisma queries
+└── <name>.validation.ts    # Zod schemas
+```
+
+## Getting Started
+
+### Prerequisites
 
 - Node.js >= 18
 - PostgreSQL
-- Redis
-- Cloudinary account
-- SSLCommerz merchant account
-- OpenRouter API key
-- Gmail account (for email)
+- Redis (optional — falls back to in-memory)
 
-## Environment Variables
+### Install
+
+```bash
+npm install
+```
+
+### Environment
 
 Create a `.env` file in the root:
 
-| Variable | Description |
-|---|---|
-| `NODE_ENV` | Environment (`development`, `production`) |
-| `PORT` | Server port (default: `5000`) |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `REDIS_URL` | Redis connection string |
-| `JWT_SECRET` | JWT signing secret |
-| `JWT_EXPIRES_IN` | JWT token expiry (e.g. `1h`) |
-| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiry (e.g. `30d`) |
-| `SALT_ROUND` | bcrypt salt rounds |
-| `CLOUD_NAME` | Cloudinary cloud name |
-| `API_KEY` | Cloudinary API key |
-| `API_SECRET` | Cloudinary API secret |
-| `Store_ID` | SSLCommerz Store ID |
-| `Store_Password` | SSLCommerz Store password |
-| `AI_API_KEY` | OpenRouter API key |
-| `SUPPORT_EMAIL` | Gmail sender address |
-| `APP_PASSWORD` | Gmail app password |
-| `BASE_URL` | Backend base URL |
-| `FRONTEND_URL` | Frontend URL |
-
-## Setup & Installation
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Generate Prisma client
-npm run prisma:generate
-
-# 3. Push schema to database
-npm run prisma:push
-
-# 4. Start development server
-npm run dev
+```env
+NODE_ENV=development
+PORT=5001
+FRONTEND_URL=http://localhost:3000
+BASE_URL=http://localhost:5001/api/v1
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/debt_manager_db?schema=public"
+SALT_ROUND=10
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=1h
+JWT_REFRESH_EXPIRES_IN=30d
+COOKIE_SECURE=false
+REDIS_URL=redis://localhost:6379
 ```
 
-## Available Scripts
+### Database
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Start dev server with hot reload |
-| `npm run build` | Compile TypeScript to JavaScript |
-| `npm start` | Run compiled production server |
-| `npm run lint` | Lint source files |
-| `npm run prisma:generate` | Generate Prisma client |
-| `npm run prisma:push` | Push schema to database |
-| `npm run prisma:migrate` | Run Prisma migrations |
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+### Run
+
+```bash
+# Development
+npm run dev
+
+# Production
+npm run build
+npm start
+```
+
+Server starts at `http://localhost:5001`.
 
 ## API Endpoints
 
-### User
+Base URL: `/api/v1`
+
+### Auth
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/auth/register` | No | Create account |
+| POST | `/auth/login` | No | Login (sets cookies) |
+| POST | `/auth/logout` | Yes | Logout (clears cookies) |
+| POST | `/auth/refresh` | No | Refresh access token |
+| GET | `/auth/me` | Yes | Get current user profile |
+| POST | `/auth/change-password` | Yes | Change password |
+
+### Users (Admin Only)
+
 | Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/v1/users/register-profile` | Register a new user (avatar upload, AI welcome, email, payment) |
+|--------|----------|-------------|
+| GET | `/users` | List all users |
+| GET | `/users/:id` | Get user by ID |
+| PATCH | `/users/:id` | Update user |
+| DELETE | `/users/:id` | Delete user |
 
-## Database Models
+### Loans
 
-- **User** — id, email, password, name, role (USER/ADMIN), avatar, status
-- **Order** — id, user, amount, currency, transaction ID, customer info, status
-- **Payment** — id, order, amount, currency, method, status, transaction ID, gateway URL
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/loans/summary` | Loan summary + analytics |
+| GET | `/loans` | List loans (paginated) |
+| POST | `/loans` | Create loan |
+| GET | `/loans/:id` | Get loan detail |
+| PATCH | `/loans/:id` | Update loan |
+| DELETE | `/loans/:id` | Delete loan |
+
+### Transactions
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/transactions/stats` | Transaction stats |
+| GET | `/transactions` | List transactions (paginated) |
+| POST | `/transactions` | Record transaction |
+| GET | `/transactions/:id` | Get transaction detail |
+| PATCH | `/transactions/:id` | Update transaction |
+| DELETE | `/transactions/:id` | Delete transaction |
+
+## Data Models
+
+### Roles
+
+- `USER` — Can manage own loans and transactions
+- `ADMIN` — Full access to all data + user management
+
+### Loan Types
+
+- `CASH_WITH_PRODUCT` — Cash loan with product collateral
+- `CASH_ONLY` — Pure cash loan
+
+### Loan Status
+
+- `PENDING` — Not yet active
+- `ACTIVE` — Currently active
+- `DUE` — Overdue
+- `FINISHED` — Fully paid
+
+### Transaction Types
+
+- `PAYMENT` — Payment towards a loan
+- `DEPOSIT` — Deposit into a loan
+
+## License
+
+MIT

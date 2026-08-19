@@ -10,12 +10,17 @@ async function myserver() {
     let server;
     try {
         await redis_1.RedisService.connectRedis();
+    }
+    catch (err) {
+        console.warn('Redis not reachable — continuing with in-memory token store', err);
+    }
+    try {
         server = app_1.default.listen(config_1.default.port, () => {
-            console.log(` Fully secure operational grid safe on port channels: ${config_1.default.port}`);
+            console.log(` Debt Manager API is running on port: ${config_1.default.port}`);
         });
     }
     catch (err) {
-        console.error('System structural entry deployment setup pipeline aborted:', err);
+        console.error('Failed to start server:', err);
     }
 }
 myserver();

@@ -1,12 +1,18 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import config from './config';
 import { globalErrorHandler } from './middlewares/globalErrorHandler';
 import router from './app/routes';
 
 const app: Application = express();
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(
+  cors({
+    origin: [config.frontend_url, 'http://localhost:3000', 'http://localhost:3001'],
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

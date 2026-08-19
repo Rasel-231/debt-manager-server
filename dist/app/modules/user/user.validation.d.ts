@@ -1,52 +1,35 @@
 import { z } from 'zod';
 export declare const userValidation: {
-    createUserSchema: z.ZodObject<{
-        body: z.ZodObject<{
-            email: z.ZodString;
-            password: z.ZodString;
-            name: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            name: string;
-            email: string;
-            password: string;
-        }, {
-            name: string;
-            email: string;
-            password: string;
-        }>;
-    }, "strip", z.ZodTypeAny, {
-        body: {
-            name: string;
-            email: string;
-            password: string;
-        };
-    }, {
-        body: {
-            name: string;
-            email: string;
-            password: string;
-        };
-    }>;
     updateUserSchema: z.ZodObject<{
         body: z.ZodObject<{
             name: z.ZodOptional<z.ZodString>;
+            role: z.ZodOptional<z.ZodEnum<["USER", "ADMIN"]>>;
+            isActive: z.ZodOptional<z.ZodBoolean>;
             password: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
+            role?: "USER" | "ADMIN" | undefined;
             name?: string | undefined;
             password?: string | undefined;
+            isActive?: boolean | undefined;
         }, {
+            role?: "USER" | "ADMIN" | undefined;
             name?: string | undefined;
             password?: string | undefined;
+            isActive?: boolean | undefined;
         }>;
     }, "strip", z.ZodTypeAny, {
         body: {
+            role?: "USER" | "ADMIN" | undefined;
             name?: string | undefined;
             password?: string | undefined;
+            isActive?: boolean | undefined;
         };
     }, {
         body: {
+            role?: "USER" | "ADMIN" | undefined;
             name?: string | undefined;
             password?: string | undefined;
+            isActive?: boolean | undefined;
         };
     }>;
 };

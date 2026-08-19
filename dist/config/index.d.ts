@@ -1,8 +1,8 @@
 declare const _default: {
     env: string;
     port: string | number;
-    frontend_url: string | undefined;
-    base_url: string | undefined;
+    frontend_url: string;
+    base_url: string;
     database_url: string | undefined;
     salt_rounds: number;
     jwt: {
@@ -10,20 +10,14 @@ declare const _default: {
         expires_in: string;
         refresh_expires_in: string;
     };
-    cloudinary: {
-        cloud_name: string | undefined;
-        api_key: string | undefined;
-        api_secret: string | undefined;
-    };
-    ai_api_key: string | undefined;
-    sslcommerz: {
-        store_id: string | undefined;
-        store_password: string | undefined;
-        is_live: boolean;
-    };
-    email: {
-        app_password: string | undefined;
-        support_email: string | undefined;
+    cookie: {
+        name: string;
+        refreshName: string;
+        secure: boolean;
+        httpOnly: boolean;
+        sameSite: "lax";
+        maxAge: number;
+        refreshMaxAge: number;
     };
     redis_url: string;
 };

@@ -1,2 +1,2 @@
-export { default as UserRoutes } from '../../routes/user.route';
+export declare const UserRoutes: import("express-serve-static-core").Router;
 //# sourceMappingURL=user.route.d.ts.map
