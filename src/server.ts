@@ -13,7 +13,7 @@ async function myserver() {
 
   try {
     server = app.listen(config.port, () => {
-      console.log(` Debt Manager API is running on port: ${config.port}`);
+      console.log(` Debt Manager API is running: ${config.port}`);
     });
   } catch (err) {
     console.error('Failed to start server:', err);
