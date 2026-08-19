@@ -20,7 +20,6 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ message: 'Server is running' });
 });
-
 app.use('/api/v1', router);
 
 app.use(globalErrorHandler);
