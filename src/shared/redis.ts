@@ -13,7 +13,11 @@ redisClient.on('error', (err) =>
 redisClient.on('connect', () => console.log('Redis stream linked cache engine stable!'));
 
 const connectRedis = async (): Promise<void> => {
-  if (redisClient.status === 'end' || redisClient.status === 'close') {
+  if (
+    redisClient.status === 'wait' ||
+    redisClient.status === 'end' ||
+    redisClient.status === 'close'
+  ) {
     await redisClient.connect();
   }
 };

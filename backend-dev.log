@@ -1,0 +1,9 @@
+
+> debt-manager-backend@1.0.0 dev
+> ts-node-dev --respawn --transpile-only src/server.ts
+
+[INFO] 01:09:18 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+ Debt Manager API is running: 5001
+[INFO] 01:09:48 Restarting: F:\MyProgramming\debt-manager\backend\src\shared\redis.ts has been modified
+Redis stream linked cache engine stable!
+ Debt Manager API is running: 5001
