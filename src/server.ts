@@ -16,7 +16,7 @@ async function myserver() {
       console.log(` Debt Manager API is running: ${config.port}`);
     });
   } catch (err) {
-    console.error('Failed to start server:', err);
+    console.error('Failed to start servers:', err);
   }
 }
 
